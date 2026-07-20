@@ -1,4 +1,4 @@
-import { User, Project, FileRecord } from '@/types';
+import { User, Project, FileRecord, ClientCompany } from '@/types';
 
 export const mockCurrentUser: User = {
   id: 'usr_001',
@@ -28,6 +28,33 @@ export const mockProjects: Project[] = [
     clientName: 'Comercializadora M&M',
     createdAt: '2026-04-01',
     updatedAt: '2026-07-18',
+  },
+];
+
+export const mockCompanies: ClientCompany[] = [
+  {
+    id: 'comp_001',
+    name: 'Lion Store Corporate',
+    taxId: 'RFC123456A1B',
+    logo: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=80&q=80',
+    contactEmail: 'contacto@lionstore.com',
+    createdAt: '2025-09-12',
+  },
+  {
+    id: 'comp_002',
+    name: 'Comercializadora M&M',
+    taxId: 'RFC987654Z9X',
+    logo: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=80&q=80',
+    contactEmail: 'ventas@comercializadora-mm.com',
+    createdAt: '2025-11-03',
+  },
+  {
+    id: 'comp_003',
+    name: 'Inmobiliaria Plaza',
+    taxId: 'RFC456123Y7Q',
+    logo: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=80&q=80',
+    contactEmail: 'info@inmobiliariaplaza.mx',
+    createdAt: '2026-01-21',
   },
 ];
 

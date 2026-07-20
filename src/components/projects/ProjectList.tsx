@@ -8,9 +8,15 @@ interface ProjectListProps {
   projects: Project[];
   onSelectProject: (project: Project) => void;
   canCreateProject: boolean;
+  onCreateProjectClick?: () => void;
 }
 
-export const ProjectList: React.FC<ProjectListProps> = ({ projects, onSelectProject, canCreateProject }) => {
+export const ProjectList: React.FC<ProjectListProps> = ({
+  projects,
+  onSelectProject,
+  canCreateProject,
+  onCreateProjectClick,
+}) => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -22,7 +28,10 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, onSelectProj
         </div>
 
         {canCreateProject && (
-          <button className="btn-primary text-white text-xs font-semibold px-5 py-3 rounded-full flex items-center space-x-2 transition-all shadow-lg shadow-[rgba(37,99,235,0.2)] active:scale-95">
+          <button
+            onClick={onCreateProjectClick}
+            className="btn-primary text-white text-xs font-semibold px-5 py-3 rounded-full flex items-center space-x-2 transition-all shadow-lg shadow-[rgba(37,99,235,0.2)] active:scale-95"
+          >
             <Plus className="w-4 h-4" />
             <span>Nuevo Proyecto</span>
           </button>
@@ -58,18 +67,18 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, onSelectProj
               <div className="flex items-center justify-between text-xs text-text-secondary">
                 <div className="flex items-center space-x-1.5">
                   <FileText className="w-3.5 h-3.5 text-primary" />
-                  <span>{project.filesCount} archivos</span>
+                  <span>{project.filesCount ?? 0} archivos</span>
                 </div>
                 <div className="flex items-center space-x-1.5">
                   <ShoppingBag className="w-3.5 h-3.5 text-accent" />
-                  <span>{project.activeOrdersCount} pedidos</span>
+                  <span>{project.activeOrdersCount ?? 0} pedidos</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center space-x-1 text-[11px] text-text-secondary">
                   <Clock className="w-3 h-3" />
-                  <span>{project.updatedAt}</span>
+                  <span>{project.updatedAt || 'Hace un momento'}</span>
                 </div>
                 <div className="flex items-center space-x-1 text-xs font-semibold text-primary group-hover:translate-x-1 transition-transform">
                   <span>Abrir</span>

@@ -6,7 +6,8 @@ import { Sidebar, NavSection } from '@/components/shared/Sidebar';
 import { FileExplorer } from '@/components/files/FileExplorer';
 import { UniversalFileViewer } from '@/components/viewer/UniversalFileViewer';
 import { ClientManager } from '@/components/admin/ClientManager';
-import { mockCurrentUser, mockProjects, mockFiles } from '@/lib/mockData';
+import { ProjectModal } from '@/components/projects/ProjectModal';
+import { mockCurrentUser, mockProjects, mockFiles, mockCompanies } from '@/lib/mockData';
 import { UserRole, Project, FileRecord } from '@/types';
 import {
   ChevronLeft,
@@ -30,11 +31,13 @@ export default function Home() {
     role: 'super_admin' as UserRole,
   });
 
+  // Estado mutable para la lista de proyectos y apertura del modal
+  const [projectsList, setProjectsList] = useState<Project[]>(mockProjects);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+
   const [selectedProject, setSelectedProject] = useState<Project | null>(mockProjects[0] || null);
   const [activeFile, setActiveFile] = useState<FileRecord | null>(null);
   const [projectSearch, setProjectSearch] = useState('');
-
-  // login handled by `LoginCard` when unauthenticated
 
   const handleLogout = () => {
     setIsAuthenticated(false);
@@ -42,12 +45,26 @@ export default function Home() {
     setSelectedProject(null);
   };
 
+  const handleCreateProject = (
+    projectData: Omit<Project, 'id' | 'filesCount' | 'activeOrdersCount' | 'updatedAt'>
+  ) => {
+    const newProject: Project = {
+      ...projectData,
+      id: `prj-${Date.now()}`,
+      filesCount: 0,
+      activeOrdersCount: 0,
+      updatedAt: 'Hace un momento',
+    };
+
+    setProjectsList((prev) => [newProject, ...prev]);
+  };
+
   const isAdmin = currentUser.role === 'super_admin' || currentUser.role === 'admin';
   const canUpload = isAdmin || currentUser.role === 'client_manager';
 
   const projectFiles = mockFiles.filter((file) => file.projectId === selectedProject?.id);
 
-  const filteredProjects = mockProjects.filter(
+  const filteredProjects = projectsList.filter(
     (p) =>
       p.name.toLowerCase().includes(projectSearch.toLowerCase()) ||
       p.code?.toLowerCase().includes(projectSearch.toLowerCase())
@@ -192,7 +209,10 @@ export default function Home() {
                     </div>
 
                     {isAdmin && (
-                      <button className="flex items-center space-x-2 btn-primary text-white font-semibold px-4 py-2 rounded-full text-xs transition-all shadow-lg shadow-[rgba(37,99,235,0.18)] shrink-0">
+                      <button
+                        onClick={() => setShowProjectModal(true)}
+                        className="flex items-center space-x-2 btn-primary text-white font-semibold px-4 py-2 rounded-full text-xs transition-all shadow-lg shadow-[rgba(37,99,235,0.18)] shrink-0"
+                      >
                         <Plus className="w-4 h-4" />
                         <span>Nuevo Proyecto</span>
                       </button>
@@ -242,6 +262,13 @@ export default function Home() {
       </div>
 
       <UniversalFileViewer file={activeFile} onClose={() => setActiveFile(null)} />
+
+      <ProjectModal
+        isOpen={showProjectModal}
+        onClose={() => setShowProjectModal(false)}
+        companies={mockCompanies}
+        onCreateProject={handleCreateProject}
+      />
     </div>
   );
 }
