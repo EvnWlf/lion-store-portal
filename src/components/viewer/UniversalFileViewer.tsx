@@ -45,27 +45,34 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-6">
+    // 1. PADDING CERO EN MÓVIL (p-0) PARA APROVECHAR TODO EL BORDES DE PANTALLA
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-0 sm:p-4 md:p-6">
       <div
         ref={containerRef}
-        className={`relative w-full transition-all duration-300 bg-surface-1 border border-border overflow-hidden flex flex-col shadow-2xl ${
-          isFullscreen ? 'h-screen max-w-none rounded-none p-0' : 'max-w-6xl h-[88vh] rounded-3xl'
+        // 2. TAMAÑO FLEXIBLE: w-full h-full EN MÓVIL Y max-w-7xl h-[94vh] EN ESCRITORIO
+        className={`relative w-full transition-all duration-300 bg-surface-1 border border-border/50 overflow-hidden flex flex-col shadow-2xl ${
+          isFullscreen
+            ? 'h-screen max-w-none rounded-none p-0'
+            : 'h-full sm:h-[94vh] sm:max-w-7xl sm:rounded-3xl'
         }`}
       >
-        <div className="flex items-center justify-between px-6 py-4 bg-surface-2 border-b border-border shrink-0">
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-mono px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg uppercase font-bold">
+        {/* CABECERA ULTRA COMPACTA PARA MÓVIL / HORIZONTAL */}
+        <div className="flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3.5 bg-surface-2 border-b border-border shrink-0">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="text-[10px] sm:text-xs font-mono px-2 py-0.5 bg-primary/20 text-primary border border-primary/30 rounded-md uppercase font-bold shrink-0">
               {ext}
             </span>
-            <h3 className="text-sm font-semibold text-text truncate max-w-xs sm:max-w-md">{file.name}</h3>
+            <h3 className="text-xs sm:text-sm font-semibold text-text truncate max-w-35 xs:max-w-xs sm:max-w-md">
+              {file.name}
+            </h3>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
             {(isExcel || isOfficeDoc) && (
-                <div className="flex items-center bg-surface-2 p-1 rounded-full border border-border mr-2">
+              <div className="flex items-center bg-surface-1 p-0.5 rounded-full border border-border mr-1">
                 <button
                   onClick={() => setViewMode('native')}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                  className={`flex items-center space-x-1 px-2 py-1 rounded-full text-[11px] font-medium transition-all ${
                     viewMode === 'native' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text'
                   }`}
                   title="Usar visor interno integrado"
@@ -75,7 +82,7 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
                 </button>
                 <button
                   onClick={() => setViewMode('microsoft')}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                  className={`flex items-center space-x-1 px-2 py-1 rounded-full text-[11px] font-medium transition-all ${
                     viewMode === 'microsoft' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text'
                   }`}
                   title="Usar visor de Microsoft 365 Online"
@@ -88,7 +95,7 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
 
             <button
               onClick={toggleFullscreen}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full text-xs font-medium transition-all"
+              className="flex items-center space-x-1 p-1.5 sm:px-3 sm:py-1.5 bg-surface-1 hover:bg-surface-hover text-text-secondary rounded-full text-xs font-medium transition-all"
               title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
             >
               {isFullscreen ? (
@@ -108,7 +115,8 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
               <a
                 href={file.url}
                 download
-                className="flex items-center space-x-1.5 px-3 py-1.5 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full text-xs font-medium transition-all"
+                className="flex items-center space-x-1 p-1.5 sm:px-3 sm:py-1.5 bg-surface-1 hover:bg-surface-hover text-text-secondary rounded-full text-xs font-medium transition-all"
+                title="Descargar archivo"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Descargar</span>
@@ -117,22 +125,23 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
 
             <button
               onClick={onClose}
-              className="p-1.5 bg-accent/10 hover:bg-accent/20 text-accent rounded-full transition-all ml-2"
+              className="p-1.5 bg-accent/10 hover:bg-accent/20 text-accent rounded-full transition-all ml-1"
               title="Cerrar visor"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 bg-surface-3 relative overflow-hidden flex items-center justify-center">
+        {/* LIENZO DE VISUALIZACIÓN QUE TOMA TODO EL ESPACIO RESTANTE */}
+        <div className="flex-1 bg-surface-3 relative overflow-hidden flex items-center justify-center w-full h-full">
           {viewMode === 'microsoft' && (isExcel || isOfficeDoc) ? (
             isRealPublicUrl ? (
               <iframe src={officeViewerUrl} className="w-full h-full border-none" title={file.name} />
             ) : (
-              <div className="text-center p-8 max-w-md">
-                <AlertCircle className="w-12 h-12 mx-auto text-accent mb-3 opacity-80" />
-                <h4 className="text-base font-bold text-text mb-2">Dominio público requerido</h4>
+              <div className="text-center p-6 max-w-md">
+                <AlertCircle className="w-10 h-10 mx-auto text-accent mb-3 opacity-80" />
+                <h4 className="text-sm font-bold text-text mb-2">Dominio público requerido</h4>
                 <p className="text-xs text-text-secondary mb-4">
                   El visor de Microsoft requiere que el archivo esté subido en un servidor público o nube con URL HTTPS válida.
                 </p>
@@ -147,7 +156,7 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
           ) : (
             <>
               {isExcel && file.url && (
-                <div className="w-full h-full p-4">
+                <div className="w-full h-full p-2 sm:p-4">
                   <ExcelViewer fileUrl={file.url} />
                 </div>
               )}
@@ -156,16 +165,16 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
                 isRealPublicUrl ? (
                   <iframe src={officeViewerUrl} className="w-full h-full border-none" title={file.name} />
                 ) : (
-                  <div className="text-center p-8 max-w-md">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center">
+                  <div className="text-center p-6 max-w-md">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center">
                       {ext.includes('ppt') ? (
-                        <Presentation className="w-8 h-8 text-accent" />
+                        <Presentation className="w-6 h-6 text-accent" />
                       ) : (
-                        <FileText className="w-8 h-8 text-primary" />
+                        <FileText className="w-6 h-6 text-primary" />
                       )}
                     </div>
-                    <h4 className="text-lg font-bold text-text mb-2">Vista Previa de {ext.toUpperCase()}</h4>
-                    <p className="text-xs text-text-secondary mb-6 leading-relaxed">
+                    <h4 className="text-base font-bold text-text mb-1">Vista Previa de {ext.toUpperCase()}</h4>
+                    <p className="text-xs text-text-secondary leading-relaxed">
                       Este archivo requiere un enlace público accesible para ser procesado online.
                     </p>
                   </div>
@@ -176,23 +185,23 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
 
           {ext === 'pdf' && <iframe src={file.url} className="w-full h-full border-none" title={file.name} />}
 
-            {['png', 'jpg', 'jpeg', 'webp'].includes(ext) && (
-            <div className="p-4 flex items-center justify-center h-full">
+          {['png', 'jpg', 'jpeg', 'webp'].includes(ext) && (
+            <div className="p-2 sm:p-4 flex items-center justify-center h-full w-full">
               <Image src={file.url || ''} alt={file.name} width={1200} height={800} className="max-h-full max-w-full object-contain rounded-lg shadow-lg" unoptimized />
             </div>
           )}
 
           {file.type === 'MODEL_3D' && (
-            <div className="w-full h-full">
+            <div className="w-full h-full relative">
               <CADViewer file={file} />
             </div>
           )}
 
           {!isExcel && !isOfficeDoc && file.type !== 'MODEL_3D' && ext !== 'pdf' && !['png', 'jpg', 'jpeg', 'webp'].includes(ext) && (
             <div className="text-center p-6">
-              <AlertCircle className="w-12 h-12 mx-auto text-accent mb-3 opacity-80" />
+              <AlertCircle className="w-10 h-10 mx-auto text-accent mb-3 opacity-80" />
               <p className="text-sm font-semibold text-text mb-1">Sin vista previa disponible</p>
-              <p className="text-xs text-text-secondary mb-4">Descarga el archivo para abrirlo localmente.</p>
+              <p className="text-xs text-text-secondary">Descarga el archivo para abrirlo localmente.</p>
             </div>
           )}
         </div>
