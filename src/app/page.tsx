@@ -31,7 +31,6 @@ export default function Home() {
     role: 'super_admin' as UserRole,
   });
 
-  // Estado mutable para la lista de proyectos y apertura del modal
   const [projectsList, setProjectsList] = useState<Project[]>(mockProjects);
   const [showProjectModal, setShowProjectModal] = useState(false);
 

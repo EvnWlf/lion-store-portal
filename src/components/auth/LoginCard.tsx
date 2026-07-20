@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner'; // 👈 1. Importar toast
 
 interface LoginCardProps {
   onLoginSuccess: () => void;
@@ -16,10 +17,21 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 👈 2. Ejemplo de validación con Toast de error
+    if (!email || !password) {
+      toast.error('Por favor ingresa tu correo y contraseña');
+      return;
+    }
+
     setIsLoading(true);
 
     setTimeout(() => {
       setIsLoading(false);
+
+      // 👈 3. Disparar Toast de éxito al iniciar sesión
+      toast.success('¡Bienvenido al Portal Lion Store!');
+
       onLoginSuccess();
     }, 1000);
   };
@@ -75,7 +87,7 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
               LS
             </div>
           )}
-          
+
           <h1 className="text-2xl font-bold text-text tracking-tight">Lion Store</h1>
           <p className="text-xs text-primary font-semibold tracking-wider uppercase mt-1">
             Client Portal Access
@@ -101,7 +113,15 @@ export const LoginCard: React.FC<LoginCardProps> = ({ onLoginSuccess }) => {
           <div>
             <div className="flex justify-between items-center mb-2 ml-1">
               <label className="block text-xs font-semibold text-text">Contraseña</label>
-              <a href="#" className="text-[11px] text-primary hover:underline">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // 👈 Opcional: Notificación informativa al hacer clic en recuperar contraseña
+                  toast.info('Se ha enviado un enlace a tu correo para restablecer tu contraseña');
+                }}
+                className="text-[11px] text-primary hover:underline"
+              >
                 ¿Olvidaste tu contraseña?
               </a>
             </div>

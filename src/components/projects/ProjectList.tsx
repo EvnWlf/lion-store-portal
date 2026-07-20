@@ -3,6 +3,7 @@
 import React from 'react';
 import { Project } from '@/types';
 import { FolderGit2, ArrowRight, Clock, FileText, ShoppingBag, Plus } from 'lucide-react';
+import { toast } from 'sonner'; // 👈 Importar toast
 
 interface ProjectListProps {
   projects: Project[];
@@ -17,6 +18,20 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   canCreateProject,
   onCreateProjectClick,
 }) => {
+  const handleSelect = (project: Project) => {
+    // 👈 Notificación informativa al entrar a un proyecto
+    toast.info(`Cargando proyecto: ${project.name}`);
+    onSelectProject(project);
+  };
+
+  const handleCreateClick = () => {
+    if (!canCreateProject) {
+      toast.error('No tienes permisos suficientes para crear proyectos');
+      return;
+    }
+    onCreateProjectClick?.();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -29,7 +44,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 
         {canCreateProject && (
           <button
-            onClick={onCreateProjectClick}
+            onClick={handleCreateClick}
             className="btn-primary text-white text-xs font-semibold px-5 py-3 rounded-full flex items-center space-x-2 transition-all shadow-lg shadow-[rgba(37,99,235,0.2)] active:scale-95"
           >
             <Plus className="w-4 h-4" />
@@ -42,7 +57,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
         {projects.map((project) => (
           <div
             key={project.id}
-            onClick={() => onSelectProject(project)}
+            onClick={() => handleSelect(project)}
             className="surface-card rounded-3xl p-6 hover:border-primary/50 hover:bg-surface-2 transition-all cursor-pointer group shadow-xl flex flex-col justify-between"
           >
             <div>

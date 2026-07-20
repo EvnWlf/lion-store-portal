@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FileRecord } from '@/types';
 import { UploadModal } from './UploadModal';
+import { toast } from 'sonner'; // 👈 1. Importar Sonner
 import {
   File as FileIcon,
   FileText,
@@ -39,11 +40,11 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([]);
   const [deletedFileIds, setDeletedFileIds] = useState<string[]>([]);
   const [customNames, setCustomNames] = useState<Record<string, string>>({});
-  
+
   // Estado para buscador y menú desplegable de acciones
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-  
+
   // Estado para la edición inline de nombres de archivo
   const [editingFileId, setEditingFileId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -61,8 +62,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 👈 2. Toast al subir exitosamente
   const handleUploadSuccess = (newFile: FileRecord) => {
     setUploadedFiles((current) => [newFile, ...current]);
+    toast.success(`Archivo "${newFile.name}" subido correctamente`);
   };
 
   // Combinación y filtrado de archivos
@@ -80,11 +83,23 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   // Selector dinámico de icono por tipo y extensión de archivo
   const getFileIcon = (file: FileRecord) => {
     const fileName = file.name.toLowerCase();
-    
-    if (file.type === 'MODEL_3D' || fileName.endsWith('.gltf') || fileName.endsWith('.glb') || fileName.endsWith('.obj') || fileName.endsWith('.fbx')) {
+
+    if (
+      file.type === 'MODEL_3D' ||
+      fileName.endsWith('.gltf') ||
+      fileName.endsWith('.glb') ||
+      fileName.endsWith('.obj') ||
+      fileName.endsWith('.fbx')
+    ) {
       return <Box className="w-4 h-4 text-primary" />;
     }
-    if (file.type === 'IMAGE' || fileName.endsWith('.jpg') || fileName.endsWith('.png') || fileName.endsWith('.webp') || fileName.endsWith('.svg')) {
+    if (
+      file.type === 'IMAGE' ||
+      fileName.endsWith('.jpg') ||
+      fileName.endsWith('.png') ||
+      fileName.endsWith('.webp') ||
+      fileName.endsWith('.svg')
+    ) {
       return <ImageIcon className="w-4 h-4 text-emerald-400" />;
     }
     if (fileName.endsWith('.pdf')) {
@@ -102,10 +117,20 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     return <FileIcon className="w-4 h-4 text-text-secondary" />;
   };
 
-  // Manejadores de acciones
-  const handleDeleteFile = (fileId: string) => {
-    setDeletedFileIds((prev) => [...prev, fileId]);
+  // 👈 3. Toast al eliminar con acción de "Deshacer"
+  const handleDeleteFile = (file: FileRecord) => {
+    setDeletedFileIds((prev) => [...prev, file.id]);
     setActiveMenuId(null);
+
+    toast.error(`"${file.name}" movido a la papelera`, {
+      action: {
+        label: 'Deshacer',
+        onClick: () => {
+          setDeletedFileIds((prev) => prev.filter((id) => id !== file.id));
+          toast.success(`"${file.name}" restaurado`);
+        },
+      },
+    });
   };
 
   const startRenaming = (file: FileRecord) => {
@@ -114,11 +139,23 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     setActiveMenuId(null);
   };
 
+  // 👈 4. Toast al renombrar
   const saveRenaming = (fileId: string) => {
-    if (editingName.trim()) {
-      setCustomNames((prev) => ({ ...prev, [fileId]: editingName.trim() }));
+    const trimmed = editingName.trim();
+    if (trimmed) {
+      setCustomNames((prev) => ({ ...prev, [fileId]: trimmed }));
+      toast.success('Nombre del archivo actualizado');
     }
     setEditingFileId(null);
+  };
+
+  const cancelRenaming = () => {
+    setEditingFileId(null);
+    toast.info('Edición de nombre cancelada');
+  };
+
+  const handleDownloadNotify = (fileName: string) => {
+    toast.info(`Descargando "${fileName}"...`);
   };
 
   return (
@@ -200,7 +237,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                               onChange={(e) => setEditingName(e.target.value)}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') saveRenaming(file.id);
-                                if (e.key === 'Escape') setEditingFileId(null);
+                                if (e.key === 'Escape') cancelRenaming();
                               }}
                               className="bg-surface-2 border border-primary rounded px-2 py-1 text-xs text-text focus:outline-none"
                               autoFocus
@@ -215,7 +252,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                             </button>
                             <button
                               type="button"
-                              onClick={() => setEditingFileId(null)}
+                              onClick={cancelRenaming}
                               className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
                               title="Cancelar"
                             >
@@ -268,6 +305,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                           download
                           target="_blank"
                           rel="noreferrer"
+                          onClick={() => handleDownloadNotify(file.name)}
                           className="p-1.5 hover:bg-surface-3 text-text-secondary hover:text-text rounded-lg transition-colors"
                           title="Descargar archivo"
                         >
@@ -294,7 +332,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                             >
                               <button
                                 type="button"
-                                onClick={() => onOpen3DModel(file)}
+                                onClick={() => {
+                                  onOpen3DModel(file);
+                                  setActiveMenuId(null);
+                                }}
                                 className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-text hover:bg-surface-2 transition-colors"
                               >
                                 <Eye className="w-3.5 h-3.5 text-primary" />
@@ -306,7 +347,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                                 download
                                 target="_blank"
                                 rel="noreferrer"
-                                onClick={() => setActiveMenuId(null)}
+                                onClick={() => {
+                                  handleDownloadNotify(file.name);
+                                  setActiveMenuId(null);
+                                }}
                                 className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-text hover:bg-surface-2 transition-colors"
                               >
                                 <Download className="w-3.5 h-3.5 text-text-secondary" />
@@ -328,7 +372,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
                                   <button
                                     type="button"
-                                    onClick={() => handleDeleteFile(file.id)}
+                                    onClick={() => handleDeleteFile(file)}
                                     className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />

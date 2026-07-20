@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Project, ClientCompany, ProjectStatus } from '@/types';
+import { Project, ClientCompany } from '@/types';
 import { FolderPlus, X, Building2 } from 'lucide-react';
+import { toast } from 'sonner'; // 👈 1. Importar toast
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -38,12 +39,23 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !selectedClientId) return;
+
+    // 👈 2. Validación con Toast de Error
+    if (!name.trim()) {
+      toast.error('El nombre del proyecto es obligatorio');
+      return;
+    }
+
+    if (!selectedClientId) {
+      toast.error('Debes seleccionar un cliente para el proyecto');
+      return;
+    }
 
     const company = companies.find((c) => c.id === selectedClientId);
+    const projectName = name.trim();
 
     onCreateProject({
-      name: name.trim(),
+      name: projectName,
       code: code.trim().toUpperCase() || 'PRJ',
       description: description.trim(),
       companyId: selectedClientId,
@@ -51,9 +63,18 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
       status: 'PLANNING',
     });
 
+    // 👈 3. Toast de éxito al crear el proyecto
+    toast.success(`Proyecto "${projectName}" creado correctamente`);
+
     setName('');
     setCode('');
     setDescription('');
+    onClose();
+  };
+
+  const handleCancel = () => {
+    // 👈 4. Toast informativo al cancelar
+    toast.info('Creación de proyecto cancelada');
     onClose();
   };
 
@@ -66,7 +87,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             <h3 className="text-base font-bold text-text">Nuevo Proyecto</h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCancel}
             className="p-1 text-text-secondary hover:text-text rounded-lg hover:bg-surface-2 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -138,7 +159,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
           <div className="flex justify-end space-x-3 pt-3 border-t border-border">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCancel}
               className="px-4 py-2 rounded-xl bg-surface-2 hover:bg-surface-hover text-text-secondary font-semibold transition-colors"
             >
               Cancelar

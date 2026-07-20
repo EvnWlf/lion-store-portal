@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { FileRecord, FileType } from '@/types';
 import { X, UploadCloud, File as FileIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner'; // 👈 1. Importar Sonner
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface UploadModalProps {
   onClose: () => void;
   onUploadSuccess: (newFile: FileRecord) => void;
 }
+
+const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // Límite de 100 MB
 
 export const UploadModal: React.FC<UploadModalProps> = ({
   isOpen,
@@ -24,6 +27,16 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  // 👈 2. Validación centralizada de archivos con alertas Sonner
+  const validateAndSetFile = (file: File) => {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast.error('El archivo excede el límite permitido de 100 MB');
+      return;
+    }
+    setSelectedFile(file);
+    toast.info(`Archivo "${file.name}" seleccionado`);
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -41,13 +54,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+      validateAndSetFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      validateAndSetFile(e.target.files[0]);
     }
   };
 
@@ -66,11 +79,14 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
+  // 👈 3. Simulación de subida acompañada de Toasts
   const handleStartUpload = () => {
     if (!selectedFile) return;
 
     setUploading(true);
     setProgress(0);
+
+    const toastId = toast.loading(`Subiendo "${selectedFile.name}"...`);
 
     const interval = setInterval(() => {
       setProgress((prevProgress) => {
@@ -89,6 +105,11 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             uploadedAt: 'Hoy',
           };
 
+          // Actualizar toast de cargando a éxito
+          toast.success(`"${selectedFile.name}" subido con éxito`, {
+            id: toastId,
+          });
+
           onUploadSuccess(newRecord);
           onClose();
           setSelectedFile(null);
@@ -99,16 +120,26 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     }, 200);
   };
 
+  const handleCloseAttempt = () => {
+    if (uploading) {
+      toast.warning('No puedes cerrar la ventana mientras se sube un archivo');
+      return;
+    }
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-lg surface-card rounded-3xl p-6 shadow-2xl space-y-6">
         <div className="flex items-center justify-between border-b border-border pb-4">
           <div>
             <h3 className="text-base font-bold text-text">Subir Nuevo Archivo</h3>
-            <p className="text-xs text-text-secondary">Modelos 3D, planos, documentos o imágenes</p>
+            <p className="text-xs text-text-secondary">
+              Modelos 3D, planos, documentos o imágenes
+            </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCloseAttempt}
             disabled={uploading}
             className="p-1.5 bg-surface-2 hover:bg-surface-hover text-text-secondary hover:text-text rounded-full transition-all disabled:opacity-50"
           >
@@ -129,12 +160,18 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 : 'border-border hover:border-primary/50 hover:bg-surface-hover'
             }`}
           >
-            <input ref={fileInputRef} type="file" onChange={handleFileChange} className="hidden" />
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+            />
             <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
               <UploadCloud className="w-6 h-6" />
             </div>
             <p className="text-sm font-semibold text-text mb-1">
-              Arrastra tu archivo aquí o <span className="text-primary hover:underline">examina</span>
+              Arrastra tu archivo aquí o{' '}
+              <span className="text-primary hover:underline">examina</span>
             </p>
             <p className="text-[11px] text-text-secondary">
               Soporta GLB, PPTX, PDF, XLSX, PNG, JPG (Hasta 100 MB)
@@ -148,13 +185,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   <FileIcon className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-text truncate">{selectedFile.name}</p>
-                  <p className="text-[10px] text-text-secondary">{formatFileSize(selectedFile.size)}</p>
+                  <p className="text-xs font-semibold text-text truncate">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-[10px] text-text-secondary">
+                    {formatFileSize(selectedFile.size)}
+                  </p>
                 </div>
               </div>
 
               {!uploading && (
-                <button onClick={() => setSelectedFile(null)} className="text-xs text-accent hover:underline shrink-0 ml-2">
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="text-xs text-accent hover:underline shrink-0 ml-2"
+                >
                   Cambiar
                 </button>
               )}
@@ -170,7 +214,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   <span className="text-primary font-bold">{progress}%</span>
                 </div>
                 <div className="w-full bg-surface-2 h-2 rounded-full overflow-hidden">
-                  <div className="bg-linear-to-r from-primary to-primary-strong h-full transition-all duration-200" style={{ width: `${progress}%` }} />
+                  <div
+                    className="bg-linear-to-r from-primary to-primary-strong h-full transition-all duration-200"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
               </div>
             )}
@@ -180,7 +227,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         <div className="flex justify-end space-x-3 pt-2 border-t border-border">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCloseAttempt}
             disabled={uploading}
             className="px-4 py-2 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full text-xs font-medium transition-all"
           >
@@ -190,7 +237,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             type="button"
             disabled={!selectedFile || uploading}
             onClick={handleStartUpload}
-            className="px-5 py-2 btn-primary text-white font-semibold rounded-full text-xs transition-all shadow-lg shadow-[rgba(37,99,235,0.18)] flex items-center space-x-2"
+            className="px-5 py-2 btn-primary text-white font-semibold rounded-full text-xs transition-all shadow-lg shadow-[rgba(37,99,235,0.18)] flex items-center space-x-2 disabled:opacity-50"
           >
             {uploading ? (
               <>
