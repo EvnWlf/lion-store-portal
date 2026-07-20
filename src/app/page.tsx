@@ -163,7 +163,7 @@ export default function Home() {
                         e.stopPropagation();
                         setSelectedProject(null);
                       }}
-                      className="p-2 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full transition-all border border-border active:scale-95 flex-shrink-0"
+                      className="p-2 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full transition-all border border-border active:scale-95 shrink-0"
                       title="Volver a lista de proyectos"
                       type="button"
                     >
@@ -185,7 +185,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-xs text-text-secondary bg-surface-2 px-3 py-1.5 rounded-full border border-border flex-shrink-0">
+                  <div className="flex items-center space-x-2 text-xs text-text-secondary bg-surface-2 px-3 py-1.5 rounded-full border border-border shrink-0">
                     <Building2 className="w-3.5 h-3.5 text-primary" />
                     <span>{selectedProject.clientName || 'Cliente General'}</span>
                   </div>
