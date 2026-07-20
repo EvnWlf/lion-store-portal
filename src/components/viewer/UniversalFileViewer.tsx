@@ -46,9 +46,19 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
 
   return (
     // 1. PADDING CERO EN MÓVIL (p-0) PARA APROVECHAR TODO EL BORDES DE PANTALLA
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-0 sm:p-4 md:p-6">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-0 sm:p-4 md:p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+    >
       <div
         ref={containerRef}
+        onClick={(e) => e.stopPropagation()}
         // 2. TAMAÑO FLEXIBLE: w-full h-full EN MÓVIL Y max-w-7xl h-[94vh] EN ESCRITORIO
         className={`relative w-full transition-all duration-300 bg-surface-1 border border-border/50 overflow-hidden flex flex-col shadow-2xl ${
           isFullscreen
@@ -124,9 +134,14 @@ export const UniversalFileViewer: React.FC<UniversalFileViewerProps> = ({ file, 
             )}
 
             <button
-              onClick={onClose}
-              className="p-1.5 bg-accent/10 hover:bg-accent/20 text-accent rounded-full transition-all ml-1"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
+              className="p-1.5 bg-accent/10 hover:bg-accent/20 text-accent rounded-full transition-all ml-1 active:scale-95"
               title="Cerrar visor"
+              type="button"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>

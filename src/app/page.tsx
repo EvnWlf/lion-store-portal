@@ -104,8 +104,11 @@ export default function Home() {
               <span className="text-xs text-text-secondary font-medium">Rol:</span>
               <select
                 value={currentUser.role}
-                onChange={(e) => setCurrentUser({ ...currentUser, role: e.target.value as UserRole })}
-                className="bg-transparent text-xs text-text font-semibold focus:outline-none cursor-pointer pr-1"
+                onChange={(e) => {
+                  e.preventDefault();
+                  setCurrentUser({ ...currentUser, role: e.target.value as UserRole });
+                }}
+                className="bg-transparent text-xs text-text font-semibold focus:outline-none cursor-pointer pr-1 appearance-none"
               >
                 <option value="super_admin" className="bg-surface-2 text-text">Super Admin</option>
                 <option value="admin" className="bg-surface-2 text-text">Admin</option>
@@ -153,17 +156,22 @@ export default function Home() {
             (selectedProject ? (
               <div className="space-y-6 max-w-7xl mx-auto">
                 <div className="surface-card rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center shadow-lg">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-4 w-full">
                     <button
-                      onClick={() => setSelectedProject(null)}
-                      className="p-2 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full transition-all border border-border"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedProject(null);
+                      }}
+                      className="p-2 bg-surface-2 hover:bg-surface-hover text-text-secondary rounded-full transition-all border border-border active:scale-95 flex-shrink-0"
                       title="Volver a lista de proyectos"
+                      type="button"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
 
-                    <div>
-                      <div className="flex items-center space-x-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-3 flex-wrap">
                         <h1 className="text-lg font-bold text-text tracking-tight">{selectedProject.name}</h1>
                         {selectedProject.code && (
                           <span className="text-[10px] font-mono px-2 py-0.5 bg-surface-2 text-primary border border-primary/20 rounded-md font-semibold">
@@ -177,7 +185,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-xs text-text-secondary bg-surface-2 px-3 py-1.5 rounded-full border border-border">
+                  <div className="flex items-center space-x-2 text-xs text-text-secondary bg-surface-2 px-3 py-1.5 rounded-full border border-border flex-shrink-0">
                     <Building2 className="w-3.5 h-3.5 text-primary" />
                     <span>{selectedProject.clientName || 'Cliente General'}</span>
                   </div>
@@ -221,10 +229,14 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredProjects.map((project) => (
-                    <div
+                    <button
                       key={project.id}
-                      onClick={() => setSelectedProject(project)}
-                      className="group surface-card hover:bg-surface-2 border border-border hover:border-primary/30 rounded-2xl p-5 cursor-pointer transition-all duration-200 shadow-md flex flex-col justify-between space-y-4"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedProject(project);
+                      }}
+                      type="button"
+                      className="group surface-card hover:bg-surface-2 border border-border hover:border-primary/30 rounded-2xl p-5 cursor-pointer transition-all duration-200 shadow-md flex flex-col justify-between space-y-4 text-left w-full active:scale-95"
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
@@ -252,7 +264,7 @@ export default function Home() {
                           Abrir &rarr;
                         </span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
